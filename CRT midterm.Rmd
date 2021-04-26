@@ -1,0 +1,64 @@
+---
+title: "CRT Midterm"
+author:   
+  - "Tess Sameshima"
+  - "Chris Ives"
+  - "Rachael Latimer"
+date: "4/25/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(rio)
+```
+
+## Part A: Data
+1. Use the function above to download all of the data from the 2014-15 to 2017-18 school years and bind it into a single data frame, using a single function (i.e., one line of code). 
+- Filter for only student groups coded as "White" or "Hispanic/Latino".
+- Select variables related to the number of students in each of the levels (1:4), and not percentages or collapsed levels.
+- Remove any row that has missing data in any of the n variables
+```{r PartA1}
+
+#Run the code below to load the following dataset.
+download_file <- function(year) {
+  link <- glue::glue("https://www.oregon.gov/ode/educator-resources/assessment/TestResults20{year}/pagr_schools_ela_raceethnicity_{year-1}{year}.xlsx")
+  rio::import(link, setclass = "tibble", na = c("-", "--", "*"))
+}
+
+#1.
+```
+
+2. Sum the n across grades and school for each district within each academic year, student group, and level. Calculate the number of schools (unique schools listed) for each district. Also move your data to a wider format where the student groups become new columns, filled by the district n. Remove districts that did not report numbers for one or both student groups (i.e., drop missing data from the new columns). 
+```{r PartA2}
+
+
+#2.
+```
+
+## Part B: Achievement Gaps
+1. Estimate the average achievement differences in terms of an effect size for every school district in the state that reported data on both student groups (i.e., using the data we created above), for each academic year. Conduct this analysis twice, once using group_by() %>% nest() map() and once using nest_by() %>% summarize().
+```{r PartB1}
+remotes::install_github("datalorax/gapr")
+
+#1.
+```
+
+2. Reproduce the plot to confirm that the estimates are equivalent across methods.
+```{r PartB2}
+
+#2.
+```
+
+3. The plot below shows the achievement difference estimates for one school district across years. Produce a similar plot to the below for each of the first 100 school districts. Once you’ve created all the plots, reproduce them again using an alternative method. Make sure you don’t miss the caption noting the number of schools in the district.
+```{r PartB3}
+
+#3.
+```
+
+4.Save the plots into a “plots” directory. Make sure the file names are meaningful.
+```{r PartB4}
+
+#4.
+```
