@@ -43,10 +43,12 @@ cat_long <- categories %>%
   pivot_longer(cols = 6:9,
                names_to = "level",
                values_to = "n") %>% 
-  mutate(level = parse_number(level)) %>% 
+  mutate(level = parse_number(level),
+         level = as.character(level),
+         n = as.integer(n)) %>% 
   filter(n!="NA")
 
-head(cat_long)
+cat_long
 ```
 
 2. Sum the n across grades and school for each district within each academic year, student group, and level. Calculate the number of schools (unique schools listed) for each district. Also move your data to a wider format where the student groups become new columns, filled by the district n. Remove districts that did not report numbers for one or both student groups (i.e., drop missing data from the new columns). 
