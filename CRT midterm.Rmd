@@ -54,8 +54,17 @@ cat_long
 2. Sum the n across grades and school for each district within each academic year, student group, and level. Calculate the number of schools (unique schools listed) for each district. Also move your data to a wider format where the student groups become new columns, filled by the district n. Remove districts that did not report numbers for one or both student groups (i.e., drop missing data from the new columns). 
 ```{r PartA2}
 
-
 #2.
+#this isn't quite working...
+group_calc <- cat_long %>% 
+    split(., list(cat_long$student_group, cat_long$level, cat_long$academic_year, cat_long$district))%>%
+    map_df(., ~mutate(.x, total = sum(n)))%>% 
+    pivot_wider(names_from = student_group, 
+                values_from = total) %>% 
+   clean_names() %>% 
+  filter(hispanic_latino !="NA" & white!="NA")
+
+group_calc
 ```
 
 ## Part B: Achievement Gaps
