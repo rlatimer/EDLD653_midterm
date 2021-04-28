@@ -65,6 +65,19 @@ group_calc <- cat_long %>%
   filter(hispanic_latino !="NA" & white!="NA")
 
 group_calc
+
+
+#this seems better but still missing the n_schools calculation
+
+group_calc2 <- cat_long %>% 
+    group_by(student_group, level, academic_year, district) %>%
+       summarize(total = sum(n)) %>% 
+    pivot_wider(names_from = student_group, 
+                values_from = total) %>% 
+   clean_names() %>% 
+  filter(hispanic_latino !="NA" & white!="NA")
+
+group_calc2
 ```
 
 ## Part B: Achievement Gaps
