@@ -12,6 +12,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(rio)
+library(janitor)
 ```
 
 ## Part A: Data
@@ -71,13 +72,34 @@ group_calc
 
 group_calc2 <- cat_long %>% 
     group_by(student_group, level, academic_year, district) %>%
-       summarize(total = sum(n)) %>% 
-    pivot_wider(names_from = student_group, 
+       summarize(total = sum(n)) %>%  
+        pivot_wider(names_from = student_group, 
                 values_from = total) %>% 
    clean_names() %>% 
   filter(hispanic_latino !="NA" & white!="NA")
 
 group_calc2
+
+#trying things out to add n_school, (more confusion) 
+#want to count number of schools per district column after grouping(?) 
+group_calc2 <- cat_long %>% 
+  group_by(student_group, academic_year, level, district) %>% 
+  add_count(district,school, name = "n_school") %>% 
+        summarize(total = sum(n), n_school = n_school) %>%  
+            pivot_wider(names_from = student_group, 
+                values_from = total) %>% 
+                 clean_names() %>% 
+                  filter(hispanic_latino !="NA" & white!="NA")
+      
+
+   #need to count the unique instances of school within each district 
+  
+  
+  add_count(district,school, name = "n_school")  
+    mutate(n_school = length(unique(school, district)))
+
+
+
 ```
 
 ## Part B: Achievement Gaps
@@ -86,6 +108,12 @@ group_calc2
 remotes::install_github("datalorax/gapr")
 
 #1.
+
+remotes::install_github("datalorax/gapr")
+
+library(gapr)
+group_calc2[1:4, ] %>% # data source - just first four rows for first district
+  estimate_v("white", "hispanic_latino") # columns for reference/focal groups
 ```
 
 2. Reproduce the plot to confirm that the estimates are equivalent across methods.
@@ -98,6 +126,16 @@ remotes::install_github("datalorax/gapr")
 ```{r PartB3}
 
 #3.
+
+
+#ggplot stuff with placeholders
+
+%>% 
+  ggplot("School Year", "Average achevment diff") +
+    geom_line() +
+    geom_errorbar(aes(ymin ="mean achevement diff" -"SD" ,ymax = "mean achevement diff"+"SD"))
+
+
 ```
 
 4.Save the plots into a “plots” directory. Make sure the file names are meaningful.
