@@ -12,6 +12,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(rio)
+library(janitor)
 ```
 
 ## Part A: Data
@@ -55,29 +56,22 @@ cat_long
 ```{r PartA2}
 
 #2.
-#this isn't quite working...
-group_calc <- cat_long %>% 
-    split(., list(cat_long$student_group, cat_long$level, cat_long$academic_year, cat_long$district))%>%
-    map_df(., ~mutate(.x, total = sum(n)))%>% 
-    pivot_wider(names_from = student_group, 
-                values_from = total) %>% 
-   clean_names() %>% 
-  filter(hispanic_latino !="NA" & white!="NA")
-
-group_calc
 
 
-#this seems better but still missing the n_schools calculation
 
-group_calc2 <- cat_long %>% 
-    group_by(student_group, level, academic_year, district) %>%
+#this works but in slightly different order than example
+d<- cat_long %>% 
+  group_by(district) %>% 
+  mutate(n_schools = length(unique(school)))
+
+group_calc2 <- d %>% 
+    group_by(student_group, level, academic_year, district, n_schools) %>%
        summarize(total = sum(n)) %>% 
     pivot_wider(names_from = student_group, 
                 values_from = total) %>% 
    clean_names() %>% 
   filter(hispanic_latino !="NA" & white!="NA")
 
-group_calc2
 ```
 
 ## Part B: Achievement Gaps
