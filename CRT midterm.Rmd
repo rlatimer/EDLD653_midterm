@@ -77,16 +77,37 @@ group_calc2 <- d %>%
 ## Part B: Achievement Gaps
 1. Estimate the average achievement differences in terms of an effect size for every school district in the state that reported data on both student groups (i.e., using the data we created above), for each academic year. Conduct this analysis twice, once using group_by() %>% nest() map() and once using nest_by() %>% summarize().
 ```{r PartB1}
-remotes::install_github("datalorax/gapr")
+library(gapr)
 
-#1.
+m <- group_calc2 %>% 
+  group_by(district, academic_year) %>%
+  nest() %>% 
+  mutate(v = map(data, ~estimate_v(.x, "hispanic_latino", "white"))) %>% 
+  unnest(v)
+         
+m2 <- group_calc2 %>% 
+  nest_by(district, academic_year) %>%
+  summarize(v = list(estimate_v(data, "hispanic_latino", "white"))) %>% 
+  unnest(v)
+
 ```
 
 2. Reproduce the plot to confirm that the estimates are equivalent across methods.
 ```{r PartB2}
 
-#2.
+m %>%  
+  rename(v1 = v) %>% 
+  left_join(m2) %>% 
+  rename(v2 = v) %>% 
+  ggplot(aes(v2, v1)) +
+  geom_point() +
+  geom_line(color = "cornflowerblue") +
+  xlab("nest_by") + 
+  ylab("group_by") +
+  theme_minimal()
+
 ```
+
 
 3. The plot below shows the achievement difference estimates for one school district across years. Produce a similar plot to the below for each of the first 100 school districts. Once you’ve created all the plots, reproduce them again using an alternative method. Make sure you don’t miss the caption noting the number of schools in the district.
 ```{r PartB3}
