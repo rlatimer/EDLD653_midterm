@@ -110,17 +110,105 @@ m %>%
 
 
 3. The plot below shows the achievement difference estimates for one school district across years. Produce a similar plot to the below for each of the first 100 school districts. Once you’ve created all the plots, reproduce them again using an alternative method. Make sure you don’t miss the caption noting the number of schools in the district.
+
 ```{r PartB3}
+library(glue)
+library(ggtext)
+library(dplyr)
 
 #3.
+#Filter for the frist 100 unique districts
+dists <- unique(m$district)[1:100]
+
+m_filter <- m %>% 
+  filter(district %in% dists) 
+   
 
 
-#ggplot stuff with placeholders
+#map to data or just use the columns for year and 
+# m_plot <- m_filter %>% 
+#   group_by(district) %>% 
+#     nest(achievement_diff = c(auc, v, v_se, academic_year))
 
-%>% 
-  ggplot("School Year", "Average achevment diff") +
-    geom_line() +
-    geom_errorbar(aes(ymin ="mean achevement diff" -"SD" ,ymax = "mean achevement diff"+"SD"))
+m_plot <- m_filter %>% 
+  select(academic_year, district, v, v_se)
+  
+  #one plot
+m_plot %>% #group_by(district, academic_year) %>% 
+  filter(district == "Adrian SD 61") %>% 
+  ggplot(aes(academic_year, v, group = 1)) +
+  geom_line() +
+  geom_point(aes(color = v>0)) +
+  geom_errorbar(aes(ymin = v - v_se, ymax = v + v_se), 
+                width = 0.2) +
+  geom_hline(yintercept = 0, linetype = 'dotted', color = 'red') +
+  labs(title = glue("Achevement Gap Estimates:{m_plot$district}"),
+             y = "Average achevement difference (SD units)",
+             x = "School year")
+
+
+#plot for all districts
+    m_plot <- 
+      m_filter %>% 
+        group_by(district) %>% 
+          nest() %>% 
+            mutate(plot = map2(data, district, ~{
+              ggplot(.x,
+                     aes(academic_year, v, group = 1)) +
+                geom_line() +
+                geom_point(aes(color = v<0)) +
+                geom_errorbar(aes(ymin = v - v_se, ymax = v + v_se), 
+                              width = 0.2) +
+                geom_hline(yintercept = 0, 
+                           linetype = 'dotted', 
+                           color = 'red') +
+                scale_color_manual(values = c("red", "cornflowerblue")) +
+                scale_y_continuous(limits = c(-0.7, 1.7),
+                                   expand = c(0,0))  +
+                labs(title = glue("Achevement Gap Estimates:{.y}"),
+                     subtitle = "Negative values indicate <span style='color:red;'>White</span> students have higher average achivement <br>Positive values indicate <span style='color:cornflowerblue;'>Hispanic/Latino</span> students have higher average acheivment", #<br> for element_markdown 
+                     caption = glue("Note: District included {(.x[[2]][[1]])[[2]][[1]]} schools"),
+                     y = "Average achevement difference (SD units)",
+                     x = "School year") +
+                theme(legend.position = "none",
+                plot.subtitle = element_markdown()) #necessary for colored lable characters
+        }
+          )
+            )
+      
+#check
+m_plot$plot[1]      
+
+
+#alt, rowwise
+    m_plot2 <- 
+      m_filter %>% 
+      ungroup %>% 
+        nest_by(district)
+            mutate(plot = list(
+              ggplot(data,
+                     aes(academic_year, v, group = 1)) +
+                geom_line() +
+                geom_point(aes(color = v<0)) +
+                geom_errorbar(aes(ymin = v - v_se, ymax = v + v_se), 
+                              width = 0.2) +
+                geom_hline(yintercept = 0, 
+                           linetype = 'dotted', 
+                           color = 'red') +
+                scale_color_manual(values = c("red", "cornflowerblue")) +
+                scale_y_continuous(limits = c(-0.7, 1.7),
+                                   expand = c(0,0))  +
+                labs(title = glue("Achevement Gap Estimates:{district}"),
+                     subtitle = "Negative values indicate <span style='color:red;'>White</span> students have higher average achivement <br>Positive values indicate <span style='color:cornflowerblue;'>Hispanic/Latino</span> students have higher average acheivment", #<br> for element markdown 
+                     caption = glue("Note: District included {(data[[2]][[1]])[[2]][[1]]} schools"),
+                     y = "Average achevement difference (SD units)",
+                     x = "School year") +
+                theme(legend.position = "none",
+                plot.subtitle = element_markdown())
+          )
+            )
+#check
+m_plot2$plot[1]
 
 
 ```
@@ -129,4 +217,28 @@ m %>%
 ```{r PartB4}
 
 #4.
+#create directory
+fs::dir_create(here::here("plots", "achievement-gap-estimates"))
+
+#create file path
+files <- str_replace_all(tolower(m_plot$district), " ", "-")
+paths <- here::here("plots", "achievement-gap-estimates", glue("{files}.png"))
+paths
+
+#adding paths to dataframe and saving
+m_plot %>% 
+  ungroup() %>%
+    mutate(path = paths) %>% 
+      rowwise() %>%
+        summarize(
+          ggsave(
+            path, 
+            plot, 
+            width = 9.5, 
+            height = 6.5,
+            dpi = 500
+          )
+        )
+
+
 ```
