@@ -86,7 +86,8 @@ m <- group_calc2 %>%
   unnest(v)
          
 m2 <- group_calc2 %>% 
-  nest_by(district, academic_year) %>%
+  ungroup() %>% 
+  nest_by(district, academic_year) %>%  
   summarize(v = list(estimate_v(data, "hispanic_latino", "white"))) %>% 
   unnest(v)
 
@@ -124,27 +125,21 @@ m_filter <- m %>%
   filter(district %in% dists) 
    
 
-
-#map to data or just use the columns for year and 
 # m_plot <- m_filter %>% 
-#   group_by(district) %>% 
-#     nest(achievement_diff = c(auc, v, v_se, academic_year))
-
-m_plot <- m_filter %>% 
-  select(academic_year, district, v, v_se)
+#   select(academic_year, district, v, v_se)
   
   #one plot
-m_plot %>% #group_by(district, academic_year) %>% 
-  filter(district == "Adrian SD 61") %>% 
-  ggplot(aes(academic_year, v, group = 1)) +
-  geom_line() +
-  geom_point(aes(color = v>0)) +
-  geom_errorbar(aes(ymin = v - v_se, ymax = v + v_se), 
-                width = 0.2) +
-  geom_hline(yintercept = 0, linetype = 'dotted', color = 'red') +
-  labs(title = glue("Achevement Gap Estimates:{m_plot$district}"),
-             y = "Average achevement difference (SD units)",
-             x = "School year")
+# m_plot %>% #group_by(district, academic_year) %>% 
+#   filter(district == "Adrian SD 61") %>% 
+#   ggplot(aes(academic_year, v, group = 1)) +
+#   geom_line() +
+#   geom_point(aes(color = v>0)) +
+#   geom_errorbar(aes(ymin = v - v_se, ymax = v + v_se), 
+#                 width = 0.2) +
+#   geom_hline(yintercept = 0, linetype = 'dotted', color = 'red') +
+#   labs(title = glue("Achevement Gap Estimates:{m_plot$district}"),
+#              y = "Average achevement difference (SD units)",
+#              x = "School year")
 
 
 #plot for all districts
@@ -184,7 +179,7 @@ m_plot$plot[1]
     m_plot2 <- 
       m_filter %>% 
       ungroup %>% 
-        nest_by(district)
+        nest_by(district) %>% 
             mutate(plot = list(
               ggplot(data,
                      aes(academic_year, v, group = 1)) +
